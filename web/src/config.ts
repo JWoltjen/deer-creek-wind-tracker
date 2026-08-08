@@ -1,9 +1,9 @@
 export const config = {
   location: { name: "Barbed Wire Beach — Deer Creek", lat: 40.4471, lon: -111.4776 },
-  // Data is fetched at runtime from the repo's raw files. Replace <user> after first push.
+  // Data is fetched at runtime from the repo's raw files on the default (main) branch.
   dataBaseUrl: import.meta.env.DEV
     ? "/data"
-    : "https://raw.githubusercontent.com/<user>/deer-creek-wind-tracker/main/data",
+    : "https://raw.githubusercontent.com/JWoltjen/deer-creek-wind-tracker/main/data",
   goodLowMph: 15,
   goodHighMph: 26,
   steadySpreadMax: 5,
