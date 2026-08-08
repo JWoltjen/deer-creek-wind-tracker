@@ -6,7 +6,7 @@ export function ModelScoreboard(
 ) {
   const rows = scoreboard(observations, forecasts);
   if (rows.length === 0)
-    return <section><h2>Model Scoreboard</h2><p>No overlapping days yet</p></section>;
+    return <section className="model-scoreboard"><h2>Model Scoreboard</h2><p>No overlapping days yet</p></section>;
   return (
     <section className="model-scoreboard">
       <h2>Model Scoreboard</h2>

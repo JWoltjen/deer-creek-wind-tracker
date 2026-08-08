@@ -9,7 +9,7 @@ export function ForecastVsActual(
   const days = [...actual.keys()].filter((d) => fpeak.has(d)).sort().reverse();
   if (days.length === 0)
     return <section><h2>Forecast vs Actual</h2><p>No evaluated days yet</p></section>;
-  const keys = [...new Set([...fpeak.values()].flatMap((m) => [...m.keys()]))].sort();
+  const keys = [...new Set(days.flatMap((d) => [...(fpeak.get(d)?.keys() ?? [])]))].sort();
   return (
     <section className="forecast-vs-actual">
       <h2>Forecast vs Actual</h2>
