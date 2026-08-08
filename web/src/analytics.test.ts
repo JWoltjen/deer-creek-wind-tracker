@@ -67,4 +67,13 @@ describe("forecastDailyPeak", () => {
     const m = forecastDailyPeak(forecasts);
     expect(m.get("2026-08-08")?.get("open-meteo/ecmwf")).toBe(22);
   });
+
+  it("keeps an evening-fetched next-day forecast when fetchedAt is Mountain Time", () => {
+    const forecasts: Forecast[] = [
+      { fetchedAt: "2026-08-08T20:00:00-06:00", source: "open-meteo", model: "gfs",
+        validTime: "2026-08-09T14:00:00-06:00", windMph: 17, gustMph: null, dirDeg: 0 },
+    ];
+    const m = forecastDailyPeak(forecasts);
+    expect(m.get("2026-08-09")?.get("open-meteo/gfs")).toBe(17);
+  });
 });

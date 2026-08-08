@@ -52,7 +52,8 @@ public static class ForecastRunner
 
     public static async Task<int> RunAsync(string repoRoot)
     {
-        var now = DateTimeOffset.UtcNow;
+        var mt = TimeZoneInfo.FindSystemTimeZoneById("America/Denver");
+        var now = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, mt);
         var all = new List<ForecastRow>();
         var anyOk = false;
 
