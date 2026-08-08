@@ -29,7 +29,7 @@ jobs:
       - name: Collect forecasts (top of hour only)
         run: |
           MIN=$(date -u +%M)
-          if [ "$MIN" -lt 5 ]; then
+          if [ "$((10#$MIN))" -lt 5 ]; then
             dotnet run --project collectors/src/Collectors -c Release -- forecasts "$GITHUB_WORKSPACE"
           else
             echo "not top of hour ($MIN); skipping forecasts"
@@ -39,11 +39,11 @@ jobs:
         run: |
           git config user.name "kite-bot"
           git config user.email "actions@github.com"
-          git add data/*.ndjson
+          git add data/*.ndjson 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "no new data"
           else
             git pull --rebase --autostash origin ${GITHUB_REF_NAME}
             git commit -m "data: collect $(date -u +%FT%TZ)"
-            git push
+            git push origin HEAD:${GITHUB_REF_NAME}
           fi
