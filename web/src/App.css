@@ -182,3 +182,10 @@
     border-right-color: var(--border);
   }
 }
+
+main { max-width: 820px; margin: 0 auto; padding: 1rem; font-family: system-ui, sans-serif; }
+section { margin: 1.5rem 0; }
+.verdict-good h1 { color: #15803d; } .verdict-gusty h1 { color: #b45309; }
+.verdict-light h1 { color: #6b7280; } .verdict-strong h1 { color: #b91c1c; }
+table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #ddd; padding: 4px 8px; text-align: left; }
+td.miss { background: #fee2e2; font-weight: 600; }

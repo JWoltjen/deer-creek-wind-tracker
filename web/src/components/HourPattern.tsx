@@ -12,7 +12,7 @@ export function HourPattern({ observations }: { observations: Observation[] }) {
         <BarChart data={data}>
           <XAxis dataKey="hour" tickFormatter={(h) => `${h}:00`} />
           <YAxis unit=" mph" />
-          <Tooltip formatter={(v: number) => `${v.toFixed(1)} mph`} labelFormatter={(h) => `${h}:00`} />
+          <Tooltip formatter={(v) => typeof v === "number" ? `${v.toFixed(1)} mph` : ""} labelFormatter={(h) => `${h}:00`} />
           <Bar dataKey="avgMid" fill="#0369a1" />
         </BarChart>
       </ResponsiveContainer>
