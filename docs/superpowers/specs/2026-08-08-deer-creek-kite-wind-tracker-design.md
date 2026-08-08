@@ -200,10 +200,22 @@ Direction shown as a separate badge: 🟢 ideal (SW/SSW/WSW), 🟡 ok (S/W), ⚪
 - **Vite `base`** set to the repo path for Pages.
 
 ## 10. Out of Scope (v1) / Future
+
+### Phase II (planned next, after MVP deploy) — Personalized "good wind"
+Let a user specify their **equipment (kite sizes/board), riding level, and weight**,
+and recalibrate what counts as "good" for *them* instead of the hard-coded 220 lb /
+15 m² & 12 m² defaults. This is intentionally cheap given the v1 architecture: the
+`goodLowMph`/`goodHighMph`/spread thresholds already live in one config module, so
+Phase II swaps that static config for values derived from a user profile.
+- Derive the wind band from weight + kite size (standard kite-size wind charts), and
+  widen/tighten the "steady" requirement based on skill level (beginners need steadier).
+- Store the profile client-side first (localStorage) — no accounts/backend needed to start.
+- Naturally enables the per-reading kite recommendation (which of the user's kites to rig).
+
+### Later / maybe
 - Other aggregator stations (esp. Deer Creek Dam Top as a "wind building" early signal).
 - Push/email alerts when it turns good.
 - Longer-range archival/seasonal analysis.
-- Personalized kite recommendation (15 m² vs 12 m²) per reading.
 
 ## 11. Open Assumptions (flag if wrong)
 - Timestamps normalized to Mountain Time (America/Denver).
