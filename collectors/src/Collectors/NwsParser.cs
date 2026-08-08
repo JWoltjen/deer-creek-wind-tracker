@@ -21,8 +21,17 @@ public static class NwsParser
         {
             var validTime = p.GetProperty("startTime").GetString()!;
             var wind = ParseSpeed(p.TryGetProperty("windSpeed", out var w) ? w.GetString() : null);
-            double? gust = p.TryGetProperty("windGust", out var g) && g.ValueKind == JsonValueKind.String
-                ? ParseSpeed(g.GetString()) : null;
+            // /forecast/hourly returns windGust as a string ("15 mph"); other NWS endpoints return an object {"unitCode":...,"value":15.0}
+            double? gust = null;
+            if (p.TryGetProperty("windGust", out var g))
+            {
+                if (g.ValueKind == JsonValueKind.String)
+                    gust = ParseSpeed(g.GetString());
+                else if (g.ValueKind == JsonValueKind.Object
+                         && g.TryGetProperty("value", out var gv)
+                         && gv.ValueKind == JsonValueKind.Number)
+                    gust = gv.GetDouble();
+            }
             var dir = CompassDegrees.ToDegrees(p.TryGetProperty("windDirection", out var d) ? d.GetString() : null);
             rows.Add(new ForecastRow(fetchedAt, "nws", "nws", validTime, wind, gust, dir));
         }
