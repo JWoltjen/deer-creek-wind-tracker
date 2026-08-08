@@ -44,5 +44,46 @@ public static class ObservationsRunner
 
 public static class ForecastRunner
 {
-    public static Task<int> RunAsync(string repoRoot) => Task.FromResult(0);
+    private const string OpenMeteoUrl =
+        "https://api.open-meteo.com/v1/forecast?latitude=40.4471&longitude=-111.4776" +
+        "&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m&wind_speed_unit=mph" +
+        "&timezone=America%2FDenver&models=gfs_hrrr,ecmwf_ifs025,gfs_seamless";
+    private const string NwsUrl = "https://api.weather.gov/gridpoints/SLC/113,159/forecast/hourly";
+
+    public static async Task<int> RunAsync(string repoRoot)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var all = new List<ForecastRow>();
+        var anyOk = false;
+
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+        http.DefaultRequestHeaders.UserAgent.ParseAdd("kite-wind-tracker (Jeff.Woltjen@gmail.com)");
+
+        try
+        {
+            var om = await http.GetStringAsync(OpenMeteoUrl);
+            all.AddRange(OpenMeteoParser.Parse(om, now));
+            anyOk = true;
+        }
+        catch (Exception ex) { Console.Error.WriteLine($"open-meteo failed: {ex.Message}"); }
+
+        try
+        {
+            var req = new HttpRequestMessage(HttpMethod.Get, NwsUrl);
+            req.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/geo+json"));
+            var resp = await http.SendAsync(req);
+            resp.EnsureSuccessStatusCode();
+            all.AddRange(NwsParser.Parse(await resp.Content.ReadAsStringAsync(), now));
+            anyOk = true;
+        }
+        catch (Exception ex) { Console.Error.WriteLine($"nws failed: {ex.Message}"); }
+
+        if (!anyOk) return 1;
+
+        var dir = Path.Combine(repoRoot, "data");
+        Directory.CreateDirectory(dir);
+        var n = NdjsonStore.AppendForecasts(Path.Combine(dir, "forecasts.ndjson"), all);
+        Console.WriteLine($"forecasts: appended {n}");
+        return 0;
+    }
 }

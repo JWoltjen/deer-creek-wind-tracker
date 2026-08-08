@@ -41,4 +41,15 @@ public static class NdjsonStore
         File.AppendAllText(path, sb.ToString());
         return fresh.Count;
     }
+
+    public static int AppendForecasts(string path, IEnumerable<ForecastRow> rows)
+    {
+        var list = rows.ToList();
+        if (list.Count == 0) return 0;
+        var sb = new StringBuilder();
+        foreach (var r in list)
+            sb.Append(JsonSerializer.Serialize(r, Json)).Append('\n');
+        File.AppendAllText(path, sb.ToString());
+        return list.Count;
+    }
 }
