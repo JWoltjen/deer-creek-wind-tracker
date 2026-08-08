@@ -1,0 +1,49 @@
+name: collect
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # every 5 minutes (UTC); GitHub may delay a few min
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build collectors
+        run: dotnet build collectors/Collectors.sln -c Release
+
+      - name: Collect observations
+        run: dotnet run --project collectors/src/Collectors -c Release -- observations "$GITHUB_WORKSPACE"
+
+      - name: Collect forecasts (top of hour only)
+        run: |
+          MIN=$(date -u +%M)
+          if [ "$((10#$MIN))" -lt 5 ]; then
+            dotnet run --project collectors/src/Collectors -c Release -- forecasts "$GITHUB_WORKSPACE"
+          else
+            echo "not top of hour ($MIN); skipping forecasts"
+          fi
+
+      - name: Commit data
+        run: |
+          git config user.name "kite-bot"
+          git config user.email "actions@github.com"
+          git add data/*.ndjson 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "no new data"
+          else
+            git pull --rebase --autostash origin ${GITHUB_REF_NAME}
+            git commit -m "data: collect $(date -u +%FT%TZ)"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
