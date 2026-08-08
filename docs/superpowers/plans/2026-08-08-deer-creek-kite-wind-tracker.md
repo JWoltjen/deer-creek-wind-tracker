@@ -1042,7 +1042,6 @@ jobs:
         run: dotnet run --project collectors/src/Collectors -c Release -- observations "$GITHUB_WORKSPACE"
 
       - name: Collect forecasts (top of hour only)
-        if: ${{ github.event_name == 'workflow_dispatch' }} || ${{ github.run_attempt != '' }}
         run: |
           MIN=$(date -u +%M)
           if [ "$MIN" -lt 5 ]; then
