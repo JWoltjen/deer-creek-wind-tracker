@@ -38,4 +38,14 @@ public class BeachObservationTests
             "<tr><td>08/08  02:44 PM</td><td>95</td><td></td><td></td></tr></table>");
         Assert.Empty(rows);
     }
+
+    [Fact]
+    public void BuildObservations_produces_normalized_rows()
+    {
+        var now = new DateTimeOffset(2026, 8, 8, 21, 0, 0, TimeSpan.Zero);
+        var obs = Collectors.ObservationsRunner.BuildObservations(Html(), now);
+        Assert.Equal(10, obs.Count);
+        Assert.All(obs, o => Assert.Equal(2026, o.time.Year));
+        Assert.All(obs, o => Assert.True(o.high >= o.low));
+    }
 }
