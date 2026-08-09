@@ -1,0 +1,16 @@
+@import "@fontsource/space-grotesk/400.css";
+@import "@fontsource/space-grotesk/500.css";
+@import "@fontsource/space-grotesk/700.css";
+
+:root {
+  --bg: #0b1220; --panel: #0e1729; --border: #1e293b; --hairline: #16213a;
+  --text: #e6edf6; --muted: #94a3b8; --faint: #64748b; --dim: #475569;
+  --accent: #22d3ee; --lull: #0e7490;
+  --good: #22d3ee; --gusty: #f59e0b; --strong: #ef4444; --light: #334155;
+  --font: "Space Grotesk", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; background: var(--bg); color: var(--text); }
+body { font-family: var(--font); -webkit-font-smoothing: antialiased; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+h1, h2, h3 { margin: 0; font-weight: 700; }
