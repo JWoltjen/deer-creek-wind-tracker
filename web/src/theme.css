@@ -14,3 +14,12 @@ html, body, #root { margin: 0; background: var(--bg); color: var(--text); }
 body { font-family: var(--font); -webkit-font-smoothing: antialiased; }
 .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
 h1, h2, h3 { margin: 0; font-weight: 700; }
+.verdict-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.chip { font-size: 12px; font-weight: 700; letter-spacing: .06em; }
+.verdict-time { font-size: 11px; color: var(--faint); }
+.verdict-num { display: flex; align-items: baseline; gap: 8px; }
+.verdict-num .lull, .verdict-num .gust { font-size: 52px; font-weight: 700; letter-spacing: -.02em; line-height: 1; }
+.verdict-num .sep { font-size: 26px; color: var(--dim); }
+.verdict-num .unit { font-size: 15px; color: var(--faint); }
+.verdict-sub { font-size: 10px; letter-spacing: .12em; color: var(--dim); text-transform: uppercase; margin: 6px 0 14px; }
+.verdict-line { font-size: 13px; color: var(--muted); }
