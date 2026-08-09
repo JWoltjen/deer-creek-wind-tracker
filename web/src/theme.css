@@ -67,3 +67,5 @@ h1, h2, h3 { margin: 0; font-weight: 700; }
 .nudge button { color: var(--accent); font-size: 16px; }
 .calib-note { font-size: 11px; color: var(--dim); margin-top: 8px; }
 .calib-empty { color: var(--muted); }
+.kite-call { display: flex; align-items: center; gap: 8px; margin-top: 12px; background: var(--bg); border: 1px solid #143244; border-radius: 10px; padding: 9px 11px; font-size: 13px; color: var(--accent); }
+.kite-call span { color: var(--muted); }
