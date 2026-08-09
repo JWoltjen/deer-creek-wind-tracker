@@ -47,3 +47,5 @@ h1, h2, h3 { margin: 0; font-weight: 700; }
 .panel-head .chev { color: var(--faint); font-size: 12px; }
 .panel-body { display: block; }
 .live-link { font-size: 12px; color: var(--accent); text-decoration: none; }
+.asof { font-size: 11px; color: var(--faint); }
+.asof.stale { color: var(--gusty); }
