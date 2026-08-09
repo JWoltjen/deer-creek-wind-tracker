@@ -8,6 +8,7 @@ describe("App", () => {
     render(<App />);
     await waitFor(() => expect(screen.getByText(/Barbed Wire Beach/i)).toBeTruthy());
     expect(document.querySelector(".grid")).toBeTruthy();
+    expect(screen.getByText("Your setup")).toBeTruthy();
   });
 
   it("refetches on an interval", async () => {
