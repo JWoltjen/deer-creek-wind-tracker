@@ -43,10 +43,13 @@ export function BandChart({ points, showDayLabels }: { points: BandPoint[]; show
             if (!active || !payload || !payload.length) return null;
             const p = payload[0].payload as BandPoint;
             const spread = p.high - p.low;
+            const row = { display: "flex", justifyContent: "space-between", gap: 16 } as const;
             return (
               <div style={{ background: "#0e1729", border: "1px solid #1e293b", borderRadius: 8, color: "#e6edf6", fontSize: 12, padding: "6px 10px" }}>
-                <div style={{ color: "#94a3b8", marginBottom: 2 }}>{new Date(p.time).toLocaleString()}</div>
-                <div><b>{spread} mph</b> spread · {steadiness(p.low, p.high)}</div>
+                <div style={{ color: "#94a3b8", marginBottom: 4 }}>{new Date(p.time).toLocaleString()}</div>
+                <div style={row}><span style={{ color: "#64748b" }}>gust</span><b style={{ color: "#22d3ee" }}>{p.high} mph</b></div>
+                <div style={row}><span style={{ color: "#64748b" }}>lull</span><b>{p.low} mph</b></div>
+                <div style={row}><span style={{ color: "#64748b" }}>spread</span><span>{spread} mph · {steadiness(p.low, p.high)}</span></div>
               </div>
             );
           }} />
