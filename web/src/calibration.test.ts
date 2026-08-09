@@ -30,6 +30,10 @@ describe("finalBand / isCalibrated", () => {
   it("applies nudges", () => {
     expect(finalBand({ ...jeff("intermediate"), lowAdjust: -1, highAdjust: 2 })).toEqual({ low: 14, high: 28 });
   });
+  it("keeps high>low even under opposing nudges", () => {
+    const b = finalBand({ ...jeff("intermediate"), lowAdjust: 8, highAdjust: -20 });
+    expect(b.high).toBeGreaterThan(b.low);
+  });
   it("isCalibrated needs kites + weight", () => {
     expect(isCalibrated(EMPTY_PROFILE)).toBe(false);
     expect(isCalibrated(jeff("intermediate"))).toBe(true);
@@ -42,9 +46,9 @@ describe("recommendKite", () => {
     expect(recommendKite(kites, w, 16).note).toMatch(/15 m²/);
   });
   it("in both ranges → best powered, notes the other", () => {
-    const r = recommendKite(kites, w, 20);
-    expect(r.kite).not.toBeNull();
-    expect(r.note).toMatch(/m²/);
+    const r = recommendKite(kites, w, 20); // mid 20: 15's mid ~19 is closer than 12's ~21.3
+    expect(r.kite).toBe(15);
+    expect(r.note).toMatch(/grab the 12/);
   });
   it("below all → too light", () => {
     expect(recommendKite(kites, w, 10)).toEqual({ kite: null, note: "Too light for your kites." });

@@ -41,7 +41,9 @@ export function computeGoodBand(p: RiderProfile): { low: number; high: number } 
 
 export function finalBand(p: RiderProfile): { low: number; high: number } {
   const b = computeGoodBand(p);
-  return { low: b.low + p.lowAdjust, high: b.high + p.highAdjust };
+  const low = b.low + p.lowAdjust;
+  const high = b.high + p.highAdjust;
+  return { low, high: Math.max(high, low + 1) }; // keep high>low even under opposing nudges
 }
 
 export function recommendKite(kites: number[], weightLb: number, currentMid: number): { kite: number | null; note: string } {

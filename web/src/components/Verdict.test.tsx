@@ -9,6 +9,7 @@ describe("Verdict", () => {
   it("shows the verdict (no kite call when uncalibrated)", () => {
     render(<Verdict latest={latest} profile={EMPTY_PROFILE} />);
     expect(screen.getByText(/Good/)).toBeTruthy();
+    expect(screen.getByText(/steady/)).toBeTruthy();
     expect(screen.queryByText(/Rig your/)).toBeNull();
   });
   it("shows a kite call when calibrated", () => {
