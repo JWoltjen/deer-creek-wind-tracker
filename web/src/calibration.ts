@@ -1,3 +1,5 @@
+import { configThresholds, type Thresholds } from "./classify";
+
 export type Skill = "beginner" | "intermediate" | "advanced";
 
 export interface RiderProfile {
@@ -40,4 +42,31 @@ export function computeGoodBand(p: RiderProfile): { low: number; high: number } 
 export function finalBand(p: RiderProfile): { low: number; high: number } {
   const b = computeGoodBand(p);
   return { low: b.low + p.lowAdjust, high: b.high + p.highAdjust };
+}
+
+export function recommendKite(kites: number[], weightLb: number, currentMid: number): { kite: number | null; note: string } {
+  if (kites.length === 0) return { kite: null, note: "" };
+  const rs = [...kites].sort((a, b) => a - b).map((k) => {
+    const r = kiteRange(weightLb, k);
+    return { k, low: r.low, high: r.high, mid: (r.low + r.high) / 2 };
+  });
+  const inRange = rs.filter((r) => currentMid >= r.low && currentMid <= r.high);
+  if (inRange.length === 0) {
+    if (currentMid < Math.min(...rs.map((r) => r.low))) return { kite: null, note: "Too light for your kites." };
+    const smallest = rs[0].k;
+    return { kite: smallest, note: `Overpowered — ${smallest} m² only, or sit it out.` };
+  }
+  const best = inRange.reduce((a, b) => (Math.abs(b.mid - currentMid) < Math.abs(a.mid - currentMid) ? b : a));
+  const other = inRange.find((r) => r.k !== best.k);
+  if (other) {
+    const when = other.k < best.k ? "builds" : "drops";
+    return { kite: best.k, note: `${best.k} m² — grab the ${other.k} if it ${when}.` };
+  }
+  return { kite: best.k, note: `Rig your ${best.k} m².` };
+}
+
+export function effectiveThresholds(p: RiderProfile): Thresholds {
+  if (!isCalibrated(p)) return configThresholds;
+  const b = finalBand(p);
+  return { ...configThresholds, goodLowMph: b.low, goodHighMph: b.high };
 }
