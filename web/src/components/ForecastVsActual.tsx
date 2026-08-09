@@ -8,11 +8,10 @@ export function ForecastVsActual(
   const fpeak = forecastDailyPeak(forecasts);
   const days = [...actual.keys()].filter((d) => fpeak.has(d)).sort().reverse();
   if (days.length === 0)
-    return <section className="panel forecast-actual"><span className="section-title">Forecast vs actual</span><p>No evaluated days yet</p></section>;
+    return <div className="forecast-actual"><p>No evaluated days yet</p></div>;
   const keys = [...new Set(days.flatMap((d) => [...(fpeak.get(d)?.keys() ?? [])]))].sort();
   return (
-    <section className="panel forecast-actual">
-      <span className="section-title">Forecast vs actual</span>
+    <div className="forecast-actual">
       <table>
         <thead>
           <tr><th>Day</th><th>Actual peak</th>{keys.map((k) => <th key={k}>{k}</th>)}</tr>
@@ -34,6 +33,6 @@ export function ForecastVsActual(
           })}
         </tbody>
       </table>
-    </section>
+    </div>
   );
 }

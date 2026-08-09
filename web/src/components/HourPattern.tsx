@@ -8,10 +8,9 @@ import type { Observation } from "../types";
 
 export function HourPattern({ observations }: { observations: Observation[] }) {
   const data = hourPattern(ridingHoursFilter(observations, "riding"));
-  if (data.length === 0) return <section className="panel"><span className="section-title">When it's usually good</span><p>Not enough data yet</p></section>;
+  if (data.length === 0) return <div className="hour-pattern"><p>Not enough data yet</p></div>;
   return (
-    <section className="panel hour-pattern">
-      <span className="section-title">When it's usually good</span>
+    <div className="hour-pattern">
       <ResponsiveContainer width="100%" height={180}>
         <BarChart data={data} margin={{ top: 10, right: 6, bottom: 2, left: -18 }}>
           <XAxis dataKey="hour" tick={{ fill: "#64748b", fontSize: 10 }} tickFormatter={(h) => formatHourShort(h)} />
@@ -23,6 +22,6 @@ export function HourPattern({ observations }: { observations: Observation[] }) {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    </section>
+    </div>
   );
 }

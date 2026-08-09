@@ -12,9 +12,8 @@ export function HistoryChart({ observations, nowMs = Date.now() }: { observation
   const [hours, setHours] = usePersistedState<HoursMode>("dc.chart.hours", "riding");
   const sliced = sliceByRange(observations, range, nowMs);
   return (
-    <section className="panel history">
+    <div className="history">
       <div className="history-head">
-        <span className="section-title">History</span>
         <div className="chips">
           {RANGES.map((r) => (
             <button key={r} className={`chip-btn${range === r ? " on" : ""}`} onClick={() => setRange(r)}>{LABEL[r]}</button>
@@ -31,6 +30,6 @@ export function HistoryChart({ observations, nowMs = Date.now() }: { observation
       {range === "month"
         ? <MonthBars bars={dailyBars(sliced, hours)} />
         : <BandChart points={bandPoints(ridingHoursFilter(sliced, hours))} showDayLabels={range === "week"} />}
-    </section>
+    </div>
   );
 }
