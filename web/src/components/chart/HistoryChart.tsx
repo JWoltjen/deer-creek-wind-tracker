@@ -3,11 +3,13 @@ import { sliceByRange, ridingHoursFilter, bandPoints, dailyBars, type Range, typ
 import type { Observation } from "../../types";
 import { BandChart } from "./BandChart";
 import { MonthBars } from "./MonthBars";
+import { useThresholds } from "../../ThresholdsContext";
 
 const RANGES: Range[] = ["day", "week", "month"];
 const LABEL: Record<Range, string> = { day: "Day", week: "Week", month: "Month" };
 
 export function HistoryChart({ observations, nowMs = Date.now() }: { observations: Observation[]; nowMs?: number }) {
+  const t = useThresholds();
   const [range, setRange] = usePersistedState<Range>("dc.chart.range", "week");
   const [hours, setHours] = usePersistedState<HoursMode>("dc.chart.hours", "riding");
   const sliced = sliceByRange(observations, range, nowMs);
@@ -28,8 +30,8 @@ export function HistoryChart({ observations, nowMs = Date.now() }: { observation
         ))}
       </div>
       {range === "month"
-        ? <MonthBars bars={dailyBars(sliced, hours)} />
-        : <BandChart points={bandPoints(ridingHoursFilter(sliced, hours))} showDayLabels={range === "week"} />}
+        ? <MonthBars bars={dailyBars(sliced, hours, t)} />
+        : <BandChart points={bandPoints(ridingHoursFilter(sliced, hours), t)} showDayLabels={range === "week"} />}
     </div>
   );
 }

@@ -1,13 +1,14 @@
 import {
   ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ReferenceArea, ReferenceLine, CartesianGrid,
 } from "recharts";
-import { config } from "../../config";
 import { dayBoundaries, primeRanges, type BandPoint } from "../../chartData";
 import { formatHourShort } from "../../format";
 import { localHour } from "../../analytics";
 import { steadiness } from "../../classify";
+import { useThresholds } from "../../ThresholdsContext";
 
 export function BandChart({ points, showDayLabels }: { points: BandPoint[]; showDayLabels: boolean }) {
+  const t = useThresholds();
   if (points.length === 0) return <div className="band-chart"><p>No history yet</p></div>;
   const boundaries = dayBoundaries(points);
   const primes = primeRanges(points);
@@ -18,7 +19,7 @@ export function BandChart({ points, showDayLabels }: { points: BandPoint[]; show
       <ResponsiveContainer width="100%" height={200}>
         <ComposedChart data={points} margin={{ top: 6, right: 6, bottom: 2, left: -18 }}>
           <CartesianGrid stroke="#16213a" vertical={false} />
-          <ReferenceArea y1={config.goodLowMph} y2={config.goodHighMph} fill="#22d3ee" fillOpacity={0.07} />
+          <ReferenceArea y1={t.goodLowMph} y2={t.goodHighMph} fill="#22d3ee" fillOpacity={0.07} />
           {primes.map(([a, b], k) => (
             <ReferenceArea key={k} x1={a} x2={b} fill="#0ea5b7" fillOpacity={0.05} />
           ))}
@@ -49,7 +50,7 @@ export function BandChart({ points, showDayLabels }: { points: BandPoint[]; show
                 <div style={{ color: "#94a3b8", marginBottom: 4 }}>{new Date(p.time).toLocaleString()}</div>
                 <div style={row}><span style={{ color: "#64748b" }}>gust</span><b style={{ color: "#22d3ee" }}>{p.high} mph</b></div>
                 <div style={row}><span style={{ color: "#64748b" }}>lull</span><b>{p.low} mph</b></div>
-                <div style={row}><span style={{ color: "#64748b" }}>spread</span><span>{spread} mph · {steadiness(p.low, p.high)}</span></div>
+                <div style={row}><span style={{ color: "#64748b" }}>spread</span><span>{spread} mph · {steadiness(p.low, p.high, t)}</span></div>
               </div>
             );
           }} />
