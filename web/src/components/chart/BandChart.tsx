@@ -3,6 +3,8 @@ import {
 } from "recharts";
 import { config } from "../../config";
 import { dayBoundaries, primeRanges, type BandPoint } from "../../chartData";
+import { formatHourShort } from "../../format";
+import { localHour } from "../../analytics";
 
 export function BandChart({ points, showDayLabels }: { points: BandPoint[]; showDayLabels: boolean }) {
   if (points.length === 0) return <div className="band-chart"><p>No history yet</p></div>;
@@ -23,7 +25,18 @@ export function BandChart({ points, showDayLabels }: { points: BandPoint[]; show
             <ReferenceLine key={i} x={i} stroke="#1e293b"
               label={showDayLabels ? { value: dayLabel(i), position: "insideTop", fill: "#64748b", fontSize: 9 } : undefined} />
           ))}
-          <XAxis dataKey="i" hide />
+          <XAxis
+            dataKey="i"
+            hide={showDayLabels}
+            type="number"
+            domain={["dataMin", "dataMax"]}
+            tick={{ fill: "#64748b", fontSize: 10 }}
+            minTickGap={44}
+            tickFormatter={(i) => {
+              const p = points.find((q) => q.i === i);
+              return p ? formatHourShort(localHour(p.time)) : "";
+            }}
+          />
           <YAxis width={34} tick={{ fill: "#64748b", fontSize: 10 }} unit=" " domain={[0, "dataMax + 4"]} />
           <Tooltip contentStyle={{ background: "#0e1729", border: "1px solid #1e293b", borderRadius: 8, color: "#e6edf6" }}
             labelFormatter={(_, p) => (p && p[0] ? new Date((p[0].payload as BandPoint).time).toLocaleString() : "")}

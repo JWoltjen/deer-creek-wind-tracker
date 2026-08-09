@@ -3,10 +3,9 @@ import type { Observation, Forecast } from "../types";
 
 export function ModelScoreboard({ observations, forecasts }: { observations: Observation[]; forecasts: Forecast[] }) {
   const rows = scoreboard(observations, forecasts);
-  if (rows.length === 0) return <section className="panel model-scoreboard"><span className="section-title">Which forecast to trust</span><p>No overlapping days yet</p></section>;
+  if (rows.length === 0) return <div className="model-scoreboard"><p>No overlapping days yet</p></div>;
   return (
-    <section className="panel model-scoreboard">
-      <span className="section-title">Which forecast to trust</span>
+    <div className="model-scoreboard">
       <div className="board">
         {rows.map((r, i) => (
           <div className="board-row" key={r.key}>
@@ -15,6 +14,6 @@ export function ModelScoreboard({ observations, forecasts }: { observations: Obs
           </div>
         ))}
       </div>
-    </section>
+    </div>
   );
 }

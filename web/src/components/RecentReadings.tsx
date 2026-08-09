@@ -4,7 +4,7 @@ import { toCsv } from "../csv";
 import type { Observation } from "../types";
 
 export function RecentReadings({ observations }: { observations: Observation[] }) {
-  if (observations.length === 0) return <section className="panel"><span className="section-title">Recent readings</span><p>No readings yet</p></section>;
+  if (observations.length === 0) return <div className="recent"><p>No readings yet</p></div>;
   const sorted = [...observations].sort((a, b) => (a.time < b.time ? 1 : -1));
   const download = () => {
     const blob = new Blob([toCsv(sorted)], { type: "text/csv" });
@@ -14,9 +14,8 @@ export function RecentReadings({ observations }: { observations: Observation[] }
     URL.revokeObjectURL(url);
   };
   return (
-    <section className="panel recent">
+    <div className="recent">
       <div className="recent-head">
-        <span className="section-title">Recent readings</span>
         <button className="csv-btn" onClick={download}>⬇ CSV</button>
       </div>
       <div className="recent-rows">
@@ -32,6 +31,6 @@ export function RecentReadings({ observations }: { observations: Observation[] }
           );
         })}
       </div>
-    </section>
+    </div>
   );
 }

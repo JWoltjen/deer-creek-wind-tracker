@@ -48,4 +48,21 @@ public class BeachObservationTests
         Assert.All(obs, o => Assert.Equal(2026, o.time.Year));
         Assert.All(obs, o => Assert.True(o.high >= o.low));
     }
+
+    [Fact]
+    public void MergeDistinct_dedupes_by_time_and_sorts()
+    {
+        var t1 = new DateTimeOffset(2026, 8, 9, 14, 40, 0, TimeSpan.FromHours(-6));
+        var t2 = new DateTimeOffset(2026, 8, 9, 14, 42, 0, TimeSpan.FromHours(-6));
+        var t3 = new DateTimeOffset(2026, 8, 9, 14, 44, 0, TimeSpan.FromHours(-6));
+        var all = new[]
+        {
+            new Observation(t2, 90, "SW", 15, 20), new Observation(t1, 90, "SW", 14, 19),
+            new Observation(t3, 90, "SW", 16, 21), new Observation(t2, 90, "SW", 15, 20), // dup t2
+        };
+        var merged = Collectors.ObservationsRunner.MergeDistinct(all);
+        Assert.Equal(3, merged.Count);
+        Assert.Equal(t1, merged[0].time);
+        Assert.Equal(t3, merged[2].time);
+    }
 }
