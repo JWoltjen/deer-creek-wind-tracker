@@ -10,6 +10,8 @@ export const config = {
   gustySpreadMax: 10,
   idealDirs: ["SW", "SSW", "WSW"],
   okDirs: ["S", "W"],
-  dayStartHour: 9,
-  dayEndHour: 20,
+  ridingStartHour: 11,
+  ridingEndHour: 19,
+  primeStartHour: 12.5,
+  primeEndHour: 17,
 } as const;

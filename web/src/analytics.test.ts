@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { localHour, localDate, hourPattern, actualDailyPeak, scoreboard, forecastDailyPeak } from "./analytics";
+import { localHour, localDate, hourDecimal, hourPattern, actualDailyPeak, scoreboard, forecastDailyPeak } from "./analytics";
 import type { Observation, Forecast } from "./types";
 
 const obs = (time: string, low: number, high: number): Observation =>
@@ -9,6 +9,21 @@ describe("time helpers", () => {
   it("localHour uses the string's own offset", () =>
     expect(localHour("2026-08-08T14:44:00-06:00")).toBe(14));
   it("localDate", () => expect(localDate("2026-08-08T14:44:00-06:00")).toBe("2026-08-08"));
+});
+
+describe("riding window", () => {
+  it("hourDecimal includes minutes", () => {
+    expect(hourDecimal("2026-08-08T12:30:00-06:00")).toBeCloseTo(12.5, 3);
+  });
+  it("11:00 is in the riding window, 10:00 and 20:00 are out", () => {
+    const at = (h: string) => actualDailyPeak([
+      { time: `2026-08-08T${h}:00:00-06:00`, tempF: 90, dir: "SW", low: 18, high: 22 },
+    ]);
+    expect(at("11").get("2026-08-08")).toBe(20);
+    expect(at("19").get("2026-08-08")).toBe(20);
+    expect(at("10").size).toBe(0);
+    expect(at("20").size).toBe(0);
+  });
 });
 
 describe("hourPattern", () => {

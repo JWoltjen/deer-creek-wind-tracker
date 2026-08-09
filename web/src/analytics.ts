@@ -11,8 +11,13 @@ export function localDate(iso: string): string {
   return iso.slice(0, 10);
 }
 
+export function hourDecimal(iso: string): number {
+  const m = iso.match(/T(\d{2}):(\d{2})/);
+  return m ? Number(m[1]) + Number(m[2]) / 60 : new Date(iso).getHours();
+}
+
 const mid = (o: Observation) => (o.low + o.high) / 2;
-const inDay = (h: number) => h >= config.dayStartHour && h < config.dayEndHour;
+const inRiding = (h: number) => h >= config.ridingStartHour && h <= config.ridingEndHour;
 
 export function hourPattern(obs: Observation[]) {
   const buckets = new Map<number, { sum: number; count: number }>();
@@ -30,7 +35,7 @@ export function hourPattern(obs: Observation[]) {
 export function actualDailyPeak(obs: Observation[]): Map<string, number> {
   const peaks = new Map<string, number>();
   for (const o of obs) {
-    if (!inDay(localHour(o.time))) continue;
+    if (!inRiding(localHour(o.time))) continue;
     const d = localDate(o.time);
     peaks.set(d, Math.max(peaks.get(d) ?? -Infinity, mid(o)));
   }
@@ -44,7 +49,7 @@ export function forecastDailyPeak(fc: Forecast[]): Map<string, Map<string, numbe
   const chosen = new Map<string, Map<string, { fetchedAt: string; peak: number }>>();
   for (const f of fc) {
     const day = localDate(f.validTime);
-    if (!inDay(localHour(f.validTime))) continue;
+    if (!inRiding(localHour(f.validTime))) continue;
     if (f.fetchedAt.slice(0, 10) >= day) continue; // only forecasts made before the day
     const key = `${f.source}/${f.model}`;
     const dayMap = chosen.get(day) ?? new Map<string, { fetchedAt: string; peak: number }>();
