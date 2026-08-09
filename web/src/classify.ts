@@ -3,12 +3,20 @@ import { config } from "./config";
 export type Category = "good" | "gusty" | "light" | "strong";
 export type DirRating = "ideal" | "ok" | "off";
 
-export function classify(low: number, high: number): Category {
+export interface Thresholds {
+  goodLowMph: number; goodHighMph: number; steadySpreadMax: number; gustySpreadMax: number;
+}
+export const configThresholds: Thresholds = {
+  goodLowMph: config.goodLowMph, goodHighMph: config.goodHighMph,
+  steadySpreadMax: config.steadySpreadMax, gustySpreadMax: config.gustySpreadMax,
+};
+
+export function classify(low: number, high: number, t: Thresholds = configThresholds): Category {
   const mid = (low + high) / 2;
   const spread = high - low;
-  if (high < config.goodLowMph) return "light";
-  if (mid > config.goodHighMph || spread > config.gustySpreadMax) return "strong";
-  if (spread <= config.steadySpreadMax) return "good";
+  if (high < t.goodLowMph) return "light";
+  if (mid > t.goodHighMph || spread > t.gustySpreadMax) return "strong";
+  if (spread <= t.steadySpreadMax) return "good";
   return "gusty";
 }
 
@@ -19,9 +27,9 @@ export function rateDirection(dir: string): DirRating {
   return "off";
 }
 
-export function steadiness(low: number, high: number): "steady" | "a bit gusty" | "gusty" {
+export function steadiness(low: number, high: number, t: Thresholds = configThresholds): "steady" | "a bit gusty" | "gusty" {
   const spread = high - low;
-  if (spread <= config.steadySpreadMax) return "steady";
-  if (spread <= config.gustySpreadMax) return "a bit gusty";
+  if (spread <= t.steadySpreadMax) return "steady";
+  if (spread <= t.gustySpreadMax) return "a bit gusty";
   return "gusty";
 }
