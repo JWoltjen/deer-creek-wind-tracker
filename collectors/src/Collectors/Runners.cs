@@ -5,6 +5,8 @@ namespace Collectors;
 public static class ObservationsRunner
 {
     private const string Url = "http://65.130.252.76:90/fastDC.htm";
+    private const int FetchesPerRun = 3;
+    private static readonly TimeSpan FetchSpacing = TimeSpan.FromMinutes(3);
 
     public static IReadOnlyList<Observation> BuildObservations(string html, DateTimeOffset nowUtc)
     {
@@ -18,13 +20,30 @@ public static class ObservationsRunner
         return list;
     }
 
+    public static IReadOnlyList<Observation> MergeDistinct(IEnumerable<Observation> all)
+    {
+        var byTime = new Dictionary<DateTimeOffset, Observation>();
+        foreach (var o in all) byTime[o.time] = o;
+        return byTime.Values.OrderBy(o => o.time).ToList();
+    }
+
     public static async Task<int> RunAsync(string repoRoot)
     {
         try
         {
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-            var html = await http.GetStringAsync(Url);
-            var obs = BuildObservations(html, DateTimeOffset.UtcNow);
+            var collected = new List<Observation>();
+            for (var f = 0; f < FetchesPerRun; f++)
+            {
+                try
+                {
+                    var html = await http.GetStringAsync(Url);
+                    collected.AddRange(BuildObservations(html, DateTimeOffset.UtcNow));
+                }
+                catch (Exception ex) { Console.Error.WriteLine($"fetch {f} failed: {ex.Message}"); }
+                if (f < FetchesPerRun - 1) await Task.Delay(FetchSpacing);
+            }
+            var obs = MergeDistinct(collected);
             if (obs.Count == 0) { Console.Error.WriteLine("0 rows parsed; writing nothing"); return 1; }
 
             var dir = Path.Combine(repoRoot, "data");
