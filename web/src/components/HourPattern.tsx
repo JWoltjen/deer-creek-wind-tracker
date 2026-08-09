@@ -4,9 +4,11 @@ import { ridingHoursFilter } from "../chartData";
 import { classify } from "../classify";
 import { categoryColor } from "../theme";
 import { formatHourShort, formatHour12 } from "../format";
+import { useThresholds } from "../ThresholdsContext";
 import type { Observation } from "../types";
 
 export function HourPattern({ observations }: { observations: Observation[] }) {
+  const t = useThresholds();
   const data = hourPattern(ridingHoursFilter(observations, "riding"));
   if (data.length === 0) return <div className="hour-pattern"><p>Not enough data yet</p></div>;
   return (
@@ -18,7 +20,7 @@ export function HourPattern({ observations }: { observations: Observation[] }) {
           <Tooltip contentStyle={{ background: "#0e1729", border: "1px solid #1e293b", borderRadius: 8, color: "#e6edf6" }}
             formatter={(v) => [typeof v === "number" ? `${v.toFixed(1)} mph avg` : "", ""]} labelFormatter={(h) => formatHour12(Number(h))} />
           <Bar dataKey="avgMid" radius={[2, 2, 0, 0]} isAnimationActive={false}>
-            {data.map((d, i) => <Cell key={i} fill={categoryColor[classify(d.avgMid - 2, d.avgMid + 2)]} />)}
+            {data.map((d, i) => <Cell key={i} fill={categoryColor[classify(d.avgMid - 2, d.avgMid + 2, t)]} />)}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
