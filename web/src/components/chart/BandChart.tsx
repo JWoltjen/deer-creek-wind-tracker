@@ -5,6 +5,7 @@ import { config } from "../../config";
 import { dayBoundaries, primeRanges, type BandPoint } from "../../chartData";
 import { formatHourShort } from "../../format";
 import { localHour } from "../../analytics";
+import { steadiness } from "../../classify";
 
 export function BandChart({ points, showDayLabels }: { points: BandPoint[]; showDayLabels: boolean }) {
   if (points.length === 0) return <div className="band-chart"><p>No history yet</p></div>;
@@ -38,9 +39,17 @@ export function BandChart({ points, showDayLabels }: { points: BandPoint[]; show
             }}
           />
           <YAxis width={34} tick={{ fill: "#64748b", fontSize: 10 }} unit=" " domain={[0, "dataMax + 4"]} />
-          <Tooltip contentStyle={{ background: "#0e1729", border: "1px solid #1e293b", borderRadius: 8, color: "#e6edf6" }}
-            labelFormatter={(_, p) => (p && p[0] ? new Date((p[0].payload as BandPoint).time).toLocaleString() : "")}
-            formatter={(v, name) => [`${v} mph`, name === "high" ? "gust" : name === "low" ? "lull" : name]} />
+          <Tooltip cursor={{ stroke: "#334155" }} content={({ active, payload }) => {
+            if (!active || !payload || !payload.length) return null;
+            const p = payload[0].payload as BandPoint;
+            const spread = p.high - p.low;
+            return (
+              <div style={{ background: "#0e1729", border: "1px solid #1e293b", borderRadius: 8, color: "#e6edf6", fontSize: 12, padding: "6px 10px" }}>
+                <div style={{ color: "#94a3b8", marginBottom: 2 }}>{new Date(p.time).toLocaleString()}</div>
+                <div><b>{spread} mph</b> spread · {steadiness(p.low, p.high)}</div>
+              </div>
+            );
+          }} />
           <Area dataKey="range" stroke="none" fill="#22d3ee" fillOpacity={0.16} isAnimationActive={false} />
           <Line dataKey="high" dot={false} stroke="#22d3ee" strokeWidth={1.8} isAnimationActive={false} />
           <Line dataKey="low" dot={false} stroke="#0e7490" strokeWidth={1.4} isAnimationActive={false} />
