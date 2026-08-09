@@ -1,5 +1,5 @@
 import { config } from "./config";
-import { classify, type Category } from "./classify";
+import { classify, configThresholds, type Category, type Thresholds } from "./classify";
 import { localHour, localDate, hourDecimal } from "./analytics";
 import type { Observation } from "./types";
 
@@ -28,7 +28,7 @@ export function sliceByRange(obs: Observation[], range: Range, nowMs: number): O
   return obs.filter((o) => Date.parse(o.time) >= cutoff);
 }
 
-export function bandPoints(obs: Observation[]): BandPoint[] {
+export function bandPoints(obs: Observation[], t: Thresholds = configThresholds): BandPoint[] {
   return [...obs]
     .sort((a, b) => (a.time < b.time ? -1 : 1))
     .map((o, i) => {
@@ -36,7 +36,7 @@ export function bandPoints(obs: Observation[]): BandPoint[] {
       return {
         i, time: o.time, low: o.low, high: o.high,
         range: [o.low, o.high] as [number, number],
-        category: classify(o.low, o.high),
+        category: classify(o.low, o.high, t),
         dayKey: localDate(o.time),
         isPrime: hd >= config.primeStartHour && hd <= config.primeEndHour,
       };
@@ -62,7 +62,7 @@ export function primeRanges(points: BandPoint[]): Array<[number, number]> {
   return out;
 }
 
-export function dailyBars(obs: Observation[], mode: HoursMode): DailyBar[] {
+export function dailyBars(obs: Observation[], mode: HoursMode, t: Thresholds = configThresholds): DailyBar[] {
   const byDay = new Map<string, { min: number; max: number }>();
   for (const o of ridingHoursFilter(obs, mode)) {
     const d = localDate(o.time);
@@ -73,5 +73,5 @@ export function dailyBars(obs: Observation[], mode: HoursMode): DailyBar[] {
   }
   return [...byDay.entries()]
     .sort((a, b) => (a[0] < b[0] ? -1 : 1))
-    .map(([date, v]) => ({ date, minLull: v.min, maxGust: v.max, category: classify(v.min, v.max) }));
+    .map(([date, v]) => ({ date, minLull: v.min, maxGust: v.max, category: classify(v.min, v.max, t) }));
 }

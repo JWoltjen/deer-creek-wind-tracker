@@ -1,8 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { ridingHoursFilter, sliceByRange, bandPoints, dayBoundaries, primeRanges, dailyBars } from "./chartData";
+import { configThresholds, type Thresholds } from "./classify";
 import type { Observation } from "./types";
 
 const o = (time: string, low = 15, high = 20): Observation => ({ time, tempF: 90, dir: "SW", low, high });
+const strongT: Thresholds = { ...configThresholds, goodLowMph: 25, goodHighMph: 35 };
 
 describe("ridingHoursFilter", () => {
   const data = [o("2026-08-08T09:00:00-06:00"), o("2026-08-08T13:00:00-06:00"), o("2026-08-08T21:00:00-06:00")];
@@ -27,6 +29,10 @@ describe("bandPoints", () => {
     const pts = bandPoints([o("2026-08-08T13:00:00-06:00", 16, 20), o("2026-08-09T09:00:00-06:00", 8, 12)]);
     expect(pts[0]).toMatchObject({ i: 0, range: [16, 20], category: "good", dayKey: "2026-08-08", isPrime: true });
     expect(pts[1]).toMatchObject({ i: 1, category: "light", dayKey: "2026-08-09", isPrime: false });
+  });
+  it("bandPoints category respects passed thresholds", () => {
+    const pts = bandPoints([o("2026-08-08T13:00:00-06:00", 16, 20)], strongT);
+    expect(pts[0].category).toBe("light"); // high 20 < 25 under strongT
   });
 });
 
@@ -56,5 +62,9 @@ describe("dailyBars", () => {
     expect(bars).toHaveLength(2);
     expect(bars[0]).toMatchObject({ date: "2026-08-08", minLull: 14, maxGust: 24 });
     expect(bars[1]).toMatchObject({ date: "2026-08-09", category: "light" });
+  });
+  it("dailyBars category respects passed thresholds", () => {
+    const bars = dailyBars([o("2026-08-08T13:00:00-06:00", 16, 20)], "riding", strongT);
+    expect(bars[0].category).toBe("light");
   });
 });
