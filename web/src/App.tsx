@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { loadData } from "./dataLoader";
 import type { Observation, Forecast } from "./types";
+import { CollapsiblePanel } from "./components/CollapsiblePanel";
 import { Verdict } from "./components/Verdict";
 import { HistoryChart } from "./components/chart/HistoryChart";
 import { RecentReadings } from "./components/RecentReadings";
@@ -28,12 +29,14 @@ export default function App() {
       </header>
       {loading ? <p>Loading…</p> : (
         <>
-          <Verdict latest={latest} />
-          <HistoryChart observations={obs} />
-          <RecentReadings observations={obs} />
-          <HourPattern observations={obs} />
-          <ForecastVsActual observations={obs} forecasts={fc} />
-          <ModelScoreboard observations={obs} forecasts={fc} />
+          <CollapsiblePanel id="now" title="Right now"><Verdict latest={latest} /></CollapsiblePanel>
+          <CollapsiblePanel id="history" title="History"><HistoryChart observations={obs} /></CollapsiblePanel>
+          <div className="grid">
+            <CollapsiblePanel id="recent" title="Recent readings"><RecentReadings observations={obs} /></CollapsiblePanel>
+            <CollapsiblePanel id="usually" title="When it's usually good"><HourPattern observations={obs} /></CollapsiblePanel>
+            <CollapsiblePanel id="vs" title="Forecast vs actual"><ForecastVsActual observations={obs} forecasts={fc} /></CollapsiblePanel>
+            <CollapsiblePanel id="trust" title="Which forecast to trust"><ModelScoreboard observations={obs} forecasts={fc} /></CollapsiblePanel>
+          </div>
         </>
       )}
     </main>

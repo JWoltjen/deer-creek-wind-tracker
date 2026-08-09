@@ -7,5 +7,6 @@ describe("App", () => {
     vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, text: async () => "" })) as unknown as typeof fetch);
     render(<App />);
     await waitFor(() => expect(screen.getByText(/Barbed Wire Beach/i)).toBeTruthy());
+    expect(document.querySelector(".grid")).toBeTruthy();
   });
 });
