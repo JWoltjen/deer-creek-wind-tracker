@@ -11,6 +11,8 @@ export interface BandPoint {
   range: [number, number]; category: Category; dayKey: string; isPrime: boolean;
 }
 
+export interface DailyBar { date: string; minLull: number; maxGust: number; category: Category; }
+
 const RANGE_DAYS: Record<Range, number> = { day: 1, week: 7, month: 30 };
 
 export function ridingHoursFilter(obs: Observation[], mode: HoursMode): Observation[] {
@@ -47,4 +49,29 @@ export function dayBoundaries(points: BandPoint[]): number[] {
     if (points[k].dayKey !== points[k - 1].dayKey) out.push(points[k].i);
   }
   return out;
+}
+
+export function primeRanges(points: BandPoint[]): Array<[number, number]> {
+  const out: Array<[number, number]> = [];
+  let start = -1;
+  for (let k = 0; k < points.length; k++) {
+    if (points[k].isPrime && start === -1) start = points[k].i;
+    if (!points[k].isPrime && start !== -1) { out.push([start, points[k - 1].i]); start = -1; }
+  }
+  if (start !== -1) out.push([start, points[points.length - 1].i]);
+  return out;
+}
+
+export function dailyBars(obs: Observation[], mode: HoursMode): DailyBar[] {
+  const byDay = new Map<string, { min: number; max: number }>();
+  for (const o of ridingHoursFilter(obs, mode)) {
+    const d = localDate(o.time);
+    const cur = byDay.get(d) ?? { min: Infinity, max: -Infinity };
+    cur.min = Math.min(cur.min, o.low);
+    cur.max = Math.max(cur.max, o.high);
+    byDay.set(d, cur);
+  }
+  return [...byDay.entries()]
+    .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+    .map(([date, v]) => ({ date, minLull: v.min, maxGust: v.max, category: classify(v.min, v.max) }));
 }

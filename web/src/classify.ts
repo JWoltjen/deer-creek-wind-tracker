@@ -18,3 +18,10 @@ export function rateDirection(dir: string): DirRating {
   if ((config.okDirs as readonly string[]).includes(d)) return "ok";
   return "off";
 }
+
+export function steadiness(low: number, high: number): "steady" | "a bit gusty" | "gusty" {
+  const spread = high - low;
+  if (spread <= config.steadySpreadMax) return "steady";
+  if (spread <= config.gustySpreadMax) return "a bit gusty";
+  return "gusty";
+}
