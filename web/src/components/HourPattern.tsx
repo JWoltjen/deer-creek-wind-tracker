@@ -16,7 +16,7 @@ export function HourPattern({ observations }: { observations: Observation[] }) {
           <XAxis dataKey="hour" tick={{ fill: "#64748b", fontSize: 10 }} tickFormatter={(h) => `${((h + 11) % 12) + 1}${h < 12 ? "a" : "p"}`} />
           <YAxis width={34} tick={{ fill: "#64748b", fontSize: 10 }} />
           <Tooltip contentStyle={{ background: "#0e1729", border: "1px solid #1e293b", borderRadius: 8, color: "#e6edf6" }}
-            formatter={(v: number) => [`${v.toFixed(1)} mph avg`, ""]} labelFormatter={(h) => `${h}:00`} />
+            formatter={(v) => [typeof v === "number" ? `${v.toFixed(1)} mph avg` : "", ""]} labelFormatter={(h) => `${h}:00`} />
           <Bar dataKey="avgMid" radius={[2, 2, 0, 0]} isAnimationActive={false}>
             {data.map((d, i) => <Cell key={i} fill={categoryColor[classify(d.avgMid - 2, d.avgMid + 2)]} />)}
           </Bar>
