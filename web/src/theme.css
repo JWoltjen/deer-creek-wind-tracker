@@ -23,3 +23,8 @@ h1, h2, h3 { margin: 0; font-weight: 700; }
 .verdict-num .unit { font-size: 15px; color: var(--faint); }
 .verdict-sub { font-size: 10px; letter-spacing: .12em; color: var(--dim); text-transform: uppercase; margin: 6px 0 14px; }
 .verdict-line { font-size: 13px; color: var(--muted); }
+.history-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.chips, .hours-toggle { display: flex; gap: 6px; }
+.hours-toggle { justify-content: flex-end; margin-bottom: 8px; }
+.chip-btn, .seg { font: inherit; font-size: 11px; cursor: pointer; border: 1px solid var(--border); background: var(--border); color: var(--muted); padding: 3px 9px; border-radius: 6px; }
+.chip-btn.on, .seg.on { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
