@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ridingHoursFilter, sliceByRange, bandPoints, dayBoundaries, primeRanges, dailyBars, fiveTicks, hourTicks, timeInWindow } from "./chartData";
+import { ridingHoursFilter, sliceByRange, bandPoints, dayBoundaries, primeRanges, dailyBars, fiveTicks, hourTicks, timeInWindow, localDateStr, addDays, dataDayRange, sliceByDay, dayHourTicks } from "./chartData";
 import { configThresholds, type Thresholds } from "./classify";
 import type { Observation } from "./types";
 
@@ -95,6 +95,52 @@ describe("hourTicks", () => {
     expect(hourTicks(pts, true, [12, 15])).toEqual([
       { i: 0, label: "12p" }, { i: 2, label: "3p" }, { i: 3, label: "12p" },
     ]);
+  });
+});
+
+describe("localDateStr", () => {
+  it("formats a local timestamp as YYYY-MM-DD", () => {
+    expect(localDateStr(new Date(2026, 7, 9, 15, 30).getTime())).toBe("2026-08-09");
+    expect(localDateStr(new Date(2026, 0, 1, 0, 0).getTime())).toBe("2026-01-01");
+  });
+});
+
+describe("addDays", () => {
+  it("adds and subtracts days with rollover", () => {
+    expect(addDays("2026-08-09", 1)).toBe("2026-08-10");
+    expect(addDays("2026-08-09", -1)).toBe("2026-08-08");
+    expect(addDays("2026-08-31", 1)).toBe("2026-09-01");
+    expect(addDays("2026-01-01", -1)).toBe("2025-12-31");
+  });
+});
+
+describe("dataDayRange", () => {
+  it("returns first and last local dates", () => {
+    expect(dataDayRange([
+      o("2026-08-08T13:00:00-06:00"), o("2026-08-10T13:00:00-06:00"), o("2026-08-09T13:00:00-06:00"),
+    ])).toEqual({ first: "2026-08-08", last: "2026-08-10" });
+  });
+  it("returns null when empty", () => expect(dataDayRange([])).toBeNull());
+});
+
+describe("sliceByDay", () => {
+  it("keeps only readings on the given calendar day", () => {
+    const data = [o("2026-08-08T13:00:00-06:00"), o("2026-08-09T09:00:00-06:00"), o("2026-08-09T18:00:00-06:00")];
+    expect(sliceByDay(data, "2026-08-09").map((x) => x.time))
+      .toEqual(["2026-08-09T09:00:00-06:00", "2026-08-09T18:00:00-06:00"]);
+  });
+});
+
+describe("dayHourTicks", () => {
+  it("one tick per hour across the riding window", () => {
+    expect(dayHourTicks(11, 20, 1)).toEqual([
+      { i: 11, label: "11a" }, { i: 12, label: "12p" }, { i: 13, label: "1p" }, { i: 14, label: "2p" },
+      { i: 15, label: "3p" }, { i: 16, label: "4p" }, { i: 17, label: "5p" }, { i: 18, label: "6p" },
+      { i: 19, label: "7p" }, { i: 20, label: "8p" },
+    ]);
+  });
+  it("honors a larger step for the full-day view", () => {
+    expect(dayHourTicks(0, 24, 3).map((t) => t.i)).toEqual([0, 3, 6, 9, 12, 15, 18, 21, 24]);
   });
 });
 

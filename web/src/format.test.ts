@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatHourShort, formatHour12, relativeAge, formatDuration } from "./format";
+import { formatHourShort, formatHour12, relativeAge, formatDuration, formatDayLabel } from "./format";
 
 describe("format", () => {
   it("formatHourShort", () => {
@@ -18,6 +18,12 @@ describe("format", () => {
     expect(relativeAge("2026-08-09T12:45:00-06:00", now)).toBe("just now");
     expect(relativeAge("2026-08-09T12:17:00-06:00", now)).toBe("28 min ago");
     expect(relativeAge("2026-08-09T10:30:00-06:00", now)).toBe("2h 15m ago");
+  });
+});
+
+describe("formatDayLabel", () => {
+  it("renders a short month + day", () => {
+    expect(formatDayLabel("2026-08-09")).toBe("Aug 9");
   });
 });
 

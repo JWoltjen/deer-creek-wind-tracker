@@ -19,6 +19,11 @@ export function relativeAge(iso: string, nowMs: number): string {
   return m ? `${h}h ${m}m ago` : `${h}h ago`;
 }
 
+export function formatDayLabel(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d, 12).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 export function formatDuration(mins: number): string {
   const h = Math.floor(mins / 60), m = mins % 60;
   if (h && m) return `${h}h ${m}m`;
