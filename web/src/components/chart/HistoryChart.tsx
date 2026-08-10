@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { usePersistedState } from "../../hooks/usePersistedState";
-import { sliceByRange, ridingHoursFilter, bandPoints, dailyBars, timeInWindow, type Range, type HoursMode } from "../../chartData";
-import { formatDuration } from "../../format";
+import {
+  sliceByRange, sliceByDay, ridingHoursFilter, bandPoints, dailyBars, timeInWindow,
+  dataDayRange, localDateStr, addDays, type Range, type HoursMode,
+} from "../../chartData";
+import { formatDuration, formatDayLabel } from "../../format";
 import { config } from "../../config";
 import type { Observation } from "../../types";
 import { BandChart } from "./BandChart";
@@ -15,8 +19,20 @@ export function HistoryChart({ observations, nowMs = Date.now() }: { observation
   const [range, setRange] = usePersistedState<Range>("dc.chart.range", "week");
   const [hours, setHours] = usePersistedState<HoursMode>("dc.chart.hours", "riding");
   const [inWindow, setInWindow] = usePersistedState<boolean>("dc.chart.inWindow", false);
-  const sliced = sliceByRange(observations, range, nowMs);
+  const today = localDateStr(nowMs);
+  const [selectedDay, setSelectedDay] = useState(today);
+
+  const isDay = range === "day";
+  const dr = dataDayRange(observations);
+  const firstDay = dr ? dr.first : today;
+  const sliced = isDay ? sliceByDay(observations, selectedDay) : sliceByRange(observations, range, nowMs);
   const mins = timeInWindow(sliced, t, config.ridingStartHour, config.ridingEndHour);
+  const dayWindow = isDay
+    ? (hours === "full"
+        ? { startHour: 0, endHour: 24 }
+        : { startHour: config.ridingStartHour, endHour: config.ridingEndHour + 1 })
+    : undefined;
+
   return (
     <div className="history">
       <div className="history-head">
@@ -36,9 +52,19 @@ export function HistoryChart({ observations, nowMs = Date.now() }: { observation
           ◑ in-window · {formatDuration(mins)}
         </button>
       </div>
+      {isDay && (
+        <div className="day-stepper">
+          <button className="day-nav" aria-label="previous day" disabled={selectedDay <= firstDay}
+            onClick={() => setSelectedDay(addDays(selectedDay, -1))}>‹</button>
+          <span className="day-label">{selectedDay === today ? "Today" : formatDayLabel(selectedDay)}</span>
+          <button className="day-nav" aria-label="next day" disabled={selectedDay >= today}
+            onClick={() => setSelectedDay(addDays(selectedDay, 1))}>›</button>
+        </div>
+      )}
       {range === "month"
         ? <MonthBars bars={dailyBars(sliced, hours, t)} />
-        : <BandChart points={bandPoints(ridingHoursFilter(sliced, hours), t)} showDayLabels={range === "week"} inWindow={inWindow} />}
+        : <BandChart points={bandPoints(ridingHoursFilter(sliced, hours), t)}
+            showDayLabels={range === "week"} inWindow={inWindow} dayWindow={dayWindow} />}
     </div>
   );
 }
