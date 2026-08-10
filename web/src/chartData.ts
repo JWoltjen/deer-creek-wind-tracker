@@ -86,7 +86,7 @@ export function fiveTicks(maxMph: number): number[] {
 
 export interface AxisTick { i: number; label: string; }
 
-export function hourTicks(points: BandPoint[], showDayLabels: boolean, markerHours: number[]): AxisTick[] {
+export function hourTicks(points: BandPoint[], showDayLabels: boolean, markerHours: readonly number[]): AxisTick[] {
   const out: AxisTick[] = [];
   let lastHour = -1, lastKey = "";
   for (const p of points) {
