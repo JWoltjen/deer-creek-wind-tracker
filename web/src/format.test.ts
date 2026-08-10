@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatHourShort, formatHour12, relativeAge } from "./format";
+import { formatHourShort, formatHour12, relativeAge, formatDuration } from "./format";
 
 describe("format", () => {
   it("formatHourShort", () => {
@@ -18,5 +18,14 @@ describe("format", () => {
     expect(relativeAge("2026-08-09T12:45:00-06:00", now)).toBe("just now");
     expect(relativeAge("2026-08-09T12:17:00-06:00", now)).toBe("28 min ago");
     expect(relativeAge("2026-08-09T10:30:00-06:00", now)).toBe("2h 15m ago");
+  });
+});
+
+describe("formatDuration", () => {
+  it("formats hours+minutes", () => {
+    expect(formatDuration(160)).toBe("2h 40m");
+    expect(formatDuration(120)).toBe("2h");
+    expect(formatDuration(40)).toBe("40m");
+    expect(formatDuration(0)).toBe("0m");
   });
 });

@@ -1,6 +1,7 @@
 import { config } from "./config";
 import { classify, configThresholds, type Category, type Thresholds } from "./classify";
 import { localHour, localDate, hourDecimal } from "./analytics";
+import { formatHourShort } from "./format";
 import type { Observation } from "./types";
 
 export type HoursMode = "riding" | "full";
@@ -74,4 +75,51 @@ export function dailyBars(obs: Observation[], mode: HoursMode, t: Thresholds = c
   return [...byDay.entries()]
     .sort((a, b) => (a[0] < b[0] ? -1 : 1))
     .map(([date, v]) => ({ date, minLull: v.min, maxGust: v.max, category: classify(v.min, v.max, t) }));
+}
+
+export function fiveTicks(maxMph: number): number[] {
+  const top = Math.ceil(Math.max(5, maxMph) / 5) * 5;
+  const out: number[] = [];
+  for (let v = 0; v <= top; v += 5) out.push(v);
+  return out;
+}
+
+export interface AxisTick { i: number; label: string; }
+
+export function hourTicks(points: BandPoint[], showDayLabels: boolean, markerHours: readonly number[]): AxisTick[] {
+  const out: AxisTick[] = [];
+  let lastHour = -1, lastKey = "";
+  for (const p of points) {
+    const h = localHour(p.time);
+    if (showDayLabels) {
+      const key = `${p.dayKey}|${h}`;
+      if (markerHours.includes(h) && key !== lastKey) {
+        out.push({ i: p.i, label: formatHourShort(h) });
+        lastKey = key;
+      }
+    } else if (h !== lastHour) {
+      out.push({ i: p.i, label: formatHourShort(h) });
+      lastHour = h;
+    }
+  }
+  return out;
+}
+
+export function timeInWindow(obs: Observation[], t: Thresholds, ridingStart: number, ridingEnd: number, capMin = 5): number {
+  const sorted = [...obs].sort((a, b) => (a.time < b.time ? -1 : a.time > b.time ? 1 : 0));
+  let mins = 0;
+  for (let k = 0; k < sorted.length; k++) {
+    const oo = sorted[k];
+    const h = localHour(oo.time);
+    if (h < ridingStart || h > ridingEnd) continue;
+    const mid = (oo.low + oo.high) / 2;
+    if (mid < t.goodLowMph || mid > t.goodHighMph) continue;
+    let gap = capMin;
+    if (k + 1 < sorted.length) {
+      const g = (Date.parse(sorted[k + 1].time) - Date.parse(oo.time)) / 60000;
+      gap = Math.min(capMin, Math.max(0, g));
+    }
+    mins += gap;
+  }
+  return Math.round(mins);
 }
