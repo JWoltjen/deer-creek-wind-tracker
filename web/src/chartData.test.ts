@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ridingHoursFilter, sliceByRange, bandPoints, dayBoundaries, primeRanges, dailyBars } from "./chartData";
+import { ridingHoursFilter, sliceByRange, bandPoints, dayBoundaries, primeRanges, dailyBars, fiveTicks, hourTicks, timeInWindow } from "./chartData";
 import { configThresholds, type Thresholds } from "./classify";
 import type { Observation } from "./types";
 
@@ -66,5 +66,46 @@ describe("dailyBars", () => {
   it("dailyBars category respects passed thresholds", () => {
     const bars = dailyBars([o("2026-08-08T13:00:00-06:00", 16, 20)], "riding", strongT);
     expect(bars[0].category).toBe("light");
+  });
+});
+
+describe("fiveTicks", () => {
+  it("rounds up to a multiple of 5", () => {
+    expect(fiveTicks(27)).toEqual([0, 5, 10, 15, 20, 25, 30]);
+    expect(fiveTicks(20)).toEqual([0, 5, 10, 15, 20]);
+    expect(fiveTicks(0)).toEqual([0, 5]);
+  });
+});
+
+describe("hourTicks", () => {
+  it("Day: one tick per clock hour", () => {
+    const pts = bandPoints([
+      o("2026-08-08T13:00:00-06:00"), o("2026-08-08T13:30:00-06:00"),
+      o("2026-08-08T14:00:00-06:00"),
+    ]);
+    expect(hourTicks(pts, false, [12, 15])).toEqual([
+      { i: 0, label: "1p" }, { i: 2, label: "2p" },
+    ]);
+  });
+  it("Week: marker hours per day", () => {
+    const pts = bandPoints([
+      o("2026-08-08T12:00:00-06:00"), o("2026-08-08T13:00:00-06:00"),
+      o("2026-08-08T15:00:00-06:00"), o("2026-08-09T12:00:00-06:00"),
+    ]);
+    expect(hourTicks(pts, true, [12, 15])).toEqual([
+      { i: 0, label: "12p" }, { i: 2, label: "3p" }, { i: 3, label: "12p" },
+    ]);
+  });
+});
+
+describe("timeInWindow", () => {
+  it("sums in-window riding readings, caps gaps at 5 min", () => {
+    const data = [
+      o("2026-08-08T13:00:00-06:00", 16, 20),
+      o("2026-08-08T13:02:00-06:00", 16, 21),
+      o("2026-08-08T13:32:00-06:00", 8, 12),
+      o("2026-08-08T20:00:00-06:00", 16, 20),
+    ];
+    expect(timeInWindow(data, configThresholds, 11, 19, 5)).toBe(7);
   });
 });

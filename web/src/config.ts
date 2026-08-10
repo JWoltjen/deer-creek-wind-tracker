@@ -14,4 +14,5 @@ export const config = {
   ridingEndHour: 19,
   primeStartHour: 12.5,
   primeEndHour: 17,
+  weekMarkerHours: [12, 15],
 } as const;

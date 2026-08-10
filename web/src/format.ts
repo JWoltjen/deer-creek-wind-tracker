@@ -18,3 +18,10 @@ export function relativeAge(iso: string, nowMs: number): string {
   const m = mins % 60;
   return m ? `${h}h ${m}m ago` : `${h}h ago`;
 }
+
+export function formatDuration(mins: number): string {
+  const h = Math.floor(mins / 60), m = mins % 60;
+  if (h && m) return `${h}h ${m}m`;
+  if (h) return `${h}h`;
+  return `${m}m`;
+}
