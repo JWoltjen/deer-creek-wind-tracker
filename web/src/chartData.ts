@@ -105,6 +105,39 @@ export function hourTicks(points: BandPoint[], showDayLabels: boolean, markerHou
   return out;
 }
 
+export function localDateStr(ms: number): string {
+  const d = new Date(ms);
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+export function addDays(dateStr: string, n: number): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return localDateStr(new Date(y, m - 1, d + n).getTime());
+}
+
+export function dataDayRange(obs: Observation[]): { first: string; last: string } | null {
+  if (obs.length === 0) return null;
+  let first = "9999-99-99", last = "0000-00-00";
+  for (const oo of obs) {
+    const d = localDate(oo.time);
+    if (d < first) first = d;
+    if (d > last) last = d;
+  }
+  return { first, last };
+}
+
+export function sliceByDay(obs: Observation[], dateStr: string): Observation[] {
+  return obs.filter((oo) => localDate(oo.time) === dateStr);
+}
+
+export function dayHourTicks(startHour: number, endHour: number, step: number): AxisTick[] {
+  const out: AxisTick[] = [];
+  for (let h = startHour; h <= endHour; h += step) out.push({ i: h, label: formatHourShort(h) });
+  return out;
+}
+
 export function timeInWindow(obs: Observation[], t: Thresholds, ridingStart: number, ridingEnd: number, capMin = 5): number {
   const sorted = [...obs].sort((a, b) => (a.time < b.time ? -1 : a.time > b.time ? 1 : 0));
   let mins = 0;
