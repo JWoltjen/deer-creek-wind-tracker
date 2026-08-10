@@ -1,22 +1,32 @@
 import {
   ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ReferenceArea, ReferenceLine, CartesianGrid,
 } from "recharts";
-import { dayBoundaries, primeRanges, hourTicks, fiveTicks, type BandPoint } from "../../chartData";
+import { dayBoundaries, primeRanges, hourTicks, dayHourTicks, fiveTicks, type BandPoint } from "../../chartData";
+import { hourDecimal } from "../../analytics";
 import { steadiness } from "../../classify";
 import { useThresholds } from "../../ThresholdsContext";
 import { config } from "../../config";
 
-export function BandChart({ points, showDayLabels, inWindow = false }: { points: BandPoint[]; showDayLabels: boolean; inWindow?: boolean }) {
+export function BandChart({ points, showDayLabels, inWindow = false, dayWindow }: {
+  points: BandPoint[]; showDayLabels: boolean; inWindow?: boolean;
+  dayWindow?: { startHour: number; endHour: number };
+}) {
   const t = useThresholds();
-  if (points.length === 0) return <div className="band-chart"><p>No history yet</p></div>;
-  const boundaries = dayBoundaries(points);
-  const primes = primeRanges(points);
+  if (points.length === 0 && !dayWindow) return <div className="band-chart"><p>No history yet</p></div>;
+  const boundaries = dayWindow ? [] : dayBoundaries(points);
+  const primes = dayWindow ? [] : primeRanges(points);
+  const dayTicks = dayWindow
+    ? dayHourTicks(dayWindow.startHour, dayWindow.endHour, dayWindow.endHour - dayWindow.startHour > 12 ? 3 : 1)
+    : [];
   const xTicks = hourTicks(points, showDayLabels, config.weekMarkerHours);
   const yTicks = fiveTicks(Math.max(0, ...points.map((p) => p.high)));
   const data = points.map((p) => {
     const mid = (p.low + p.high) / 2;
     const inW = mid >= t.goodLowMph && mid <= t.goodHighMph;
-    return { ...p, highIn: inW ? p.high : null, highOut: inW ? null : p.high, lowIn: inW ? p.low : null, lowOut: inW ? null : p.low };
+    return {
+      ...p, x: hourDecimal(p.time),
+      highIn: inW ? p.high : null, highOut: inW ? null : p.high, lowIn: inW ? p.low : null, lowOut: inW ? null : p.low,
+    };
   });
   const dayLabel = (i: number) =>
     new Date(points.find((p) => p.i === i)!.time).toLocaleDateString(undefined, { weekday: "short" });
@@ -33,12 +43,21 @@ export function BandChart({ points, showDayLabels, inWindow = false }: { points:
             <ReferenceLine key={i} x={i} stroke="#1e293b"
               label={showDayLabels ? { value: dayLabel(i), position: "insideTop", fill: "#64748b", fontSize: 9 } : undefined} />
           ))}
-          <XAxis
-            dataKey="i" type="number" domain={["dataMin", "dataMax"]}
-            ticks={xTicks.map((x) => x.i)} interval={0} tickMargin={4}
-            tick={{ fill: "#64748b", fontSize: 10 }}
-            tickFormatter={(i) => xTicks.find((x) => x.i === i)?.label ?? ""}
-          />
+          {dayWindow ? (
+            <XAxis
+              dataKey="x" type="number" domain={[dayWindow.startHour, dayWindow.endHour]} allowDataOverflow
+              ticks={dayTicks.map((x) => x.i)} interval={0} tickMargin={4}
+              tick={{ fill: "#64748b", fontSize: 10 }}
+              tickFormatter={(v) => dayTicks.find((x) => x.i === v)?.label ?? ""}
+            />
+          ) : (
+            <XAxis
+              dataKey="i" type="number" domain={["dataMin", "dataMax"]}
+              ticks={xTicks.map((x) => x.i)} interval={0} tickMargin={4}
+              tick={{ fill: "#64748b", fontSize: 10 }}
+              tickFormatter={(i) => xTicks.find((x) => x.i === i)?.label ?? ""}
+            />
+          )}
           <YAxis width={34} ticks={yTicks} domain={[0, yTicks[yTicks.length - 1]]} tick={{ fill: "#64748b", fontSize: 10 }} />
           <Tooltip cursor={{ stroke: "#334155" }} content={({ active, payload }) => {
             if (!active || !payload || !payload.length) return null;

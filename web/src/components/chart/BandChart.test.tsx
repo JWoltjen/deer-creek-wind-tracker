@@ -22,3 +22,20 @@ describe("BandChart", () => {
     expect(container.querySelector(".band-chart")).toBeTruthy();
   });
 });
+
+describe("BandChart day mode", () => {
+  it("renders the chart container even with no points when dayWindow is set", () => {
+    const { container } = render(
+      <BandChart points={[]} showDayLabels={false} dayWindow={{ startHour: 11, endHour: 20 }} />
+    );
+    expect(container.querySelector(".band-chart")).toBeTruthy();
+    expect(container.textContent).not.toContain("No history yet");
+  });
+  it("renders points in day mode", () => {
+    const pts = bandPoints([{ time: "2026-08-09T13:00:00-06:00", tempF: 90, dir: "SW", low: 15, high: 20 }]);
+    const { container } = render(
+      <BandChart points={pts} showDayLabels={false} dayWindow={{ startHour: 11, endHour: 20 }} />
+    );
+    expect(container.querySelector(".band-chart")).toBeTruthy();
+  });
+});
