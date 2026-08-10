@@ -24,4 +24,11 @@ describe("HistoryChart", () => {
     const { container } = render(<HistoryChart observations={obs} nowMs={now} />);
     expect(container.querySelector(".month-bars")).toBeTruthy();
   });
+  it("toggles the in-window chip and persists it", () => {
+    render(<HistoryChart observations={obs} nowMs={now} />);
+    const chip = screen.getByRole("button", { name: /in-window/i });
+    expect(chip.className).not.toMatch(/ on/);
+    fireEvent.click(chip);
+    expect(JSON.parse(localStorage.getItem("dc.chart.inWindow")!)).toBe(true);
+  });
 });

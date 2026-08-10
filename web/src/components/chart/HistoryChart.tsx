@@ -1,5 +1,7 @@
 import { usePersistedState } from "../../hooks/usePersistedState";
-import { sliceByRange, ridingHoursFilter, bandPoints, dailyBars, type Range, type HoursMode } from "../../chartData";
+import { sliceByRange, ridingHoursFilter, bandPoints, dailyBars, timeInWindow, type Range, type HoursMode } from "../../chartData";
+import { formatDuration } from "../../format";
+import { config } from "../../config";
 import type { Observation } from "../../types";
 import { BandChart } from "./BandChart";
 import { MonthBars } from "./MonthBars";
@@ -12,7 +14,9 @@ export function HistoryChart({ observations, nowMs = Date.now() }: { observation
   const t = useThresholds();
   const [range, setRange] = usePersistedState<Range>("dc.chart.range", "week");
   const [hours, setHours] = usePersistedState<HoursMode>("dc.chart.hours", "riding");
+  const [inWindow, setInWindow] = usePersistedState<boolean>("dc.chart.inWindow", false);
   const sliced = sliceByRange(observations, range, nowMs);
+  const mins = timeInWindow(sliced, t, config.ridingStartHour, config.ridingEndHour);
   return (
     <div className="history">
       <div className="history-head">
@@ -28,10 +32,13 @@ export function HistoryChart({ observations, nowMs = Date.now() }: { observation
             {h === "riding" ? "Riding" : "Full"}
           </button>
         ))}
+        <button className={`seg inwin${inWindow ? " on" : ""}`} onClick={() => setInWindow(!inWindow)} title="time in your range">
+          ◑ in-window · {formatDuration(mins)}
+        </button>
       </div>
       {range === "month"
         ? <MonthBars bars={dailyBars(sliced, hours, t)} />
-        : <BandChart points={bandPoints(ridingHoursFilter(sliced, hours), t)} showDayLabels={range === "week"} />}
+        : <BandChart points={bandPoints(ridingHoursFilter(sliced, hours), t)} showDayLabels={range === "week"} inWindow={inWindow} />}
     </div>
   );
 }

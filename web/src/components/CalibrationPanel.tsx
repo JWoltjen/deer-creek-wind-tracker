@@ -20,13 +20,14 @@ export function CalibrationPanel({ profile, update, nudge }: {
   return (
     <div className="calib">
       <div className="calib-label">Kites (m²)</div>
-      <div className="calib-kites">
+      <form className="calib-kites" onSubmit={(e) => { e.preventDefault(); addKite(); }}>
         {profile.kites.map((k) => (
-          <span className="kite-chip" key={k}>{k} <button aria-label={`remove ${k}`} onClick={() => removeKite(k)}>✕</button></span>
+          <span className="kite-chip" key={k}>{k} <button type="button" aria-label={`remove ${k}`} onClick={() => removeKite(k)}>✕</button></span>
         ))}
         <input className="calib-in kite-in" value={newKite} onChange={(e) => setNewKite(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addKite()} inputMode="decimal" placeholder="+ add" />
-      </div>
+          inputMode="decimal" placeholder="+ add" />
+        <button type="submit" className="kite-add" aria-label="add kite">＋</button>
+      </form>
 
       <div className="calib-row">
         <label>Weight (lb)<input className="calib-in" type="number" value={profile.weightLb || ""} onChange={(e) => update({ weightLb: Number(e.target.value) })} /></label>

@@ -22,4 +22,11 @@ describe("CalibrationPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "high +" }));
     expect(nudge).toHaveBeenCalledWith("high", 1);
   });
+  it("adds a kite via the add button (mobile-safe)", () => {
+    const update = vi.fn();
+    render(<CalibrationPanel profile={EMPTY_PROFILE} update={update} nudge={vi.fn()} />);
+    fireEvent.change(screen.getByPlaceholderText("+ add"), { target: { value: "12" } });
+    fireEvent.click(screen.getByRole("button", { name: "add kite" }));
+    expect(update).toHaveBeenCalledWith({ kites: [12] });
+  });
 });

@@ -1,23 +1,29 @@
 import {
   ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ReferenceArea, ReferenceLine, CartesianGrid,
 } from "recharts";
-import { dayBoundaries, primeRanges, type BandPoint } from "../../chartData";
-import { formatHourShort } from "../../format";
-import { localHour } from "../../analytics";
+import { dayBoundaries, primeRanges, hourTicks, fiveTicks, type BandPoint } from "../../chartData";
 import { steadiness } from "../../classify";
 import { useThresholds } from "../../ThresholdsContext";
+import { config } from "../../config";
 
-export function BandChart({ points, showDayLabels }: { points: BandPoint[]; showDayLabels: boolean }) {
+export function BandChart({ points, showDayLabels, inWindow = false }: { points: BandPoint[]; showDayLabels: boolean; inWindow?: boolean }) {
   const t = useThresholds();
   if (points.length === 0) return <div className="band-chart"><p>No history yet</p></div>;
   const boundaries = dayBoundaries(points);
   const primes = primeRanges(points);
+  const xTicks = hourTicks(points, showDayLabels, config.weekMarkerHours);
+  const yTicks = fiveTicks(Math.max(0, ...points.map((p) => p.high)));
+  const data = points.map((p) => {
+    const mid = (p.low + p.high) / 2;
+    const inW = mid >= t.goodLowMph && mid <= t.goodHighMph;
+    return { ...p, highIn: inW ? p.high : null, highOut: inW ? null : p.high, lowIn: inW ? p.low : null, lowOut: inW ? null : p.low };
+  });
   const dayLabel = (i: number) =>
     new Date(points.find((p) => p.i === i)!.time).toLocaleDateString(undefined, { weekday: "short" });
   return (
     <div className="band-chart">
       <ResponsiveContainer width="100%" height={200}>
-        <ComposedChart data={points} margin={{ top: 6, right: 6, bottom: 2, left: -18 }}>
+        <ComposedChart data={data} margin={{ top: 6, right: 6, bottom: 2, left: -18 }}>
           <CartesianGrid stroke="#16213a" vertical={false} />
           <ReferenceArea y1={t.goodLowMph} y2={t.goodHighMph} fill="#22d3ee" fillOpacity={0.07} />
           {primes.map(([a, b], k) => (
@@ -28,18 +34,12 @@ export function BandChart({ points, showDayLabels }: { points: BandPoint[]; show
               label={showDayLabels ? { value: dayLabel(i), position: "insideTop", fill: "#64748b", fontSize: 9 } : undefined} />
           ))}
           <XAxis
-            dataKey="i"
-            hide={showDayLabels}
-            type="number"
-            domain={["dataMin", "dataMax"]}
+            dataKey="i" type="number" domain={["dataMin", "dataMax"]}
+            ticks={xTicks.map((x) => x.i)} interval={0} tickMargin={4}
             tick={{ fill: "#64748b", fontSize: 10 }}
-            minTickGap={44}
-            tickFormatter={(i) => {
-              const p = points.find((q) => q.i === i);
-              return p ? formatHourShort(localHour(p.time)) : "";
-            }}
+            tickFormatter={(i) => xTicks.find((x) => x.i === i)?.label ?? ""}
           />
-          <YAxis width={34} tick={{ fill: "#64748b", fontSize: 10 }} unit=" " domain={[0, "dataMax + 4"]} />
+          <YAxis width={34} ticks={yTicks} domain={[0, yTicks[yTicks.length - 1]]} tick={{ fill: "#64748b", fontSize: 10 }} />
           <Tooltip cursor={{ stroke: "#334155" }} content={({ active, payload }) => {
             if (!active || !payload || !payload.length) return null;
             const p = payload[0].payload as BandPoint;
@@ -55,8 +55,19 @@ export function BandChart({ points, showDayLabels }: { points: BandPoint[]; show
             );
           }} />
           <Area dataKey="range" stroke="none" fill="#22d3ee" fillOpacity={0.16} isAnimationActive={false} />
-          <Line dataKey="high" dot={false} stroke="#22d3ee" strokeWidth={1.8} isAnimationActive={false} />
-          <Line dataKey="low" dot={false} stroke="#0e7490" strokeWidth={1.4} isAnimationActive={false} />
+          {inWindow ? (
+            <>
+              <Line dataKey="highOut" dot={false} stroke="#334155" strokeWidth={1.8} isAnimationActive={false} connectNulls={false} />
+              <Line dataKey="lowOut" dot={false} stroke="#334155" strokeWidth={1.4} isAnimationActive={false} connectNulls={false} />
+              <Line dataKey="highIn" dot={false} stroke="#22d3ee" strokeWidth={1.8} isAnimationActive={false} connectNulls={false} />
+              <Line dataKey="lowIn" dot={false} stroke="#0e7490" strokeWidth={1.4} isAnimationActive={false} connectNulls={false} />
+            </>
+          ) : (
+            <>
+              <Line dataKey="high" dot={false} stroke="#22d3ee" strokeWidth={1.8} isAnimationActive={false} />
+              <Line dataKey="low" dot={false} stroke="#0e7490" strokeWidth={1.4} isAnimationActive={false} />
+            </>
+          )}
         </ComposedChart>
       </ResponsiveContainer>
     </div>
